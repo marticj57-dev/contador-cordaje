@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#155e75">
+<link rel="manifest" href="manifest.json">
+<title>Contador de cordaje</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#17212b;background:#f4f7f8}
+*{box-sizing:border-box}body{margin:0;padding:18px;max-width:720px;margin-inline:auto}
+h1{font-size:1.65rem;margin:0 0 6px}p{line-height:1.45}.muted{color:#5e6b75;font-size:.92rem}
+.card{background:white;border:1px solid #dce4e8;border-radius:16px;padding:17px;margin:14px 0;box-shadow:0 2px 8px #102a4308}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.badge{font-size:.78rem;background:#e1f2f5;color:#155e75;padding:5px 9px;border-radius:20px}
+.total{font-size:2rem;font-weight:750;letter-spacing:-.04em;margin:12px 0 0}
+label{display:block;font-size:.9rem;font-weight:600;margin:12px 0 5px}
+input{font:inherit;padding:11px 12px;border:1px solid #bdcbd2;border-radius:9px;width:100%;background:white;color:#17212b}
+button{font:inherit;font-weight:650;border:1px solid #bdcbd2;border-radius:10px;padding:12px;min-height:46px;background:#fff;color:#17212b;cursor:pointer}
+button:focus,input:focus{outline:3px solid #7dd3fc;outline-offset:2px}
+.primary{background:#155e75;color:white;border-color:#155e75;width:100%;margin-top:12px}
+.secondary{width:100%;margin-top:8px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+.small{font-size:.82rem}.history-item{border-top:1px solid #e1e7ea;padding:12px 0}.history-item:first-child{border-top:0}
+.notice{min-height:1.5em;color:#155e75;font-weight:600;font-size:.9rem}
+footer{padding:8px 2px 20px}
+@media(min-width:600px){.racquets{display:grid;grid-template-columns:1fr 1fr;gap:14px}.racquets .card{margin:14px 0}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎾 Contador de cordaje</h1>
+  <p class="muted">Registra los minutos jugados con cada raqueta. Cuando se rompa el cordaje, guarda su duración y empieza de cero.</p>
+</header>
+<div class="racquets" id="racquets"></div>
+<div class="notice" id="notice" role="status" aria-live="polite"></div>
+<section class="card">
+  <h2 style="font-size:1.2rem;margin-top:0">Historial de cordajes rotos</h2>
+  <p class="muted">Se conserva la fecha, las horas acumuladas y el número de sesiones.</p>
+  <div id="history"></div>
+  <button id="export" class="secondary">Exportar copia de seguridad</button>
+  <label for="importFile">Restaurar desde una copia de seguridad</label>
+  <input id="importFile" type="file" accept="application/json,.json">
+  <p class="muted small">Guarda la copia de seguridad en un lugar seguro, especialmente antes de cambiar de móvil.</p>
+</section>
+<footer class="muted small">Los datos se guardan en este navegador. No desinstales ni borres sus datos sin exportar antes una copia.</footer>
+<script>
+(() => {
+  const KEY = 'contadorCordajeTenis_v1';
+  const defaults = {
+    rackets: [
+      {name:'Raqueta 1', minutes:0, sessions:0, lastStringDate:null},
+      {name:'Raqueta 2', minutes:0, sessions:0, lastStringDate:null}
+    ],
+    history:[]
+  };
+  let state;
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY));
+    state = saved && Array.isArray(saved.rackets) && saved.rackets.length===2 && Array.isArray(saved.history)
+      ? saved : structuredClone(defaults);
+  } catch { state = structuredClone(defaults); }
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const formatMinutes = n => {
+    const h=Math.floor(n/60), m=n%60;
+    if(h===0) return `${m} min`;
+    if(m===0) return `${h} h`;
+    return `${h} h ${m} min`;
+  };
+  const dateNow = () => new Date().toLocaleDateString('es-ES');
+  function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+  function render(){
+    $('racquets').innerHTML = state.rackets.map((r,i)=>`
+      <section class="card">
+        <div class="top"><strong>RAQUETA ${i+1}</strong><span class="badge">Cordaje actual</span></div>
+        <label for="name${i}">Nombre</label>
+        <input id="name${i}" maxlength="35" value="${esc(r.name)}" aria-label="Nombre de la raqueta ${i+1}">
+        <div class="total">${formatMinutes(r.minutes)}</div>
+        <div class="muted">${r.sessions} ${r.sessions===1?'sesión':'sesiones'} desde el último encordado</div>
+        <label for="mins${i}">Duración de esta sesión (minutos)</label>
+        <input id="mins${i}" type="number" min="1" max="600" step="1" value="90" inputmode="numeric">
+        <button class="primary" data-add="${i}">+ Registrar sesión</button>
+        <button class="secondary" data-break="${i}">Cordaje roto: guardar y reiniciar</button>
+      </section>`).join('');
+    $('history').innerHTML = state.history.length ? state.history.slice().reverse().map(h=>`
+      <div class="history-item"><strong>${esc(h.name)}</strong> — ${formatMinutes(h.minutes)}
+      <div class="muted small">${esc(h.date)} · ${h.sessions} ${h.sessions===1?'sesión':'sesiones'}</div></div>`).join('') :
+      '<p class="muted">Todavía no hay cordajes registrados.</p>';
+  }
+  $('racquets').addEventListener('click', e=>{
+    const add=e.target.closest('[data-add]');
+    const br=e.target.closest('[data-break]');
+    if(add){
+      const i=Number(add.dataset.add), input=$(`mins${i}`), minutes=Number(input.value);
+      const name=$(`name${i}`).value.trim() || `Raqueta ${i+1}`;
+      if(!Number.isInteger(minutes)||minutes<1||minutes>600){$('notice').textContent='Introduce minutos enteros entre 1 y 600.';input.focus();return;}
+      state.rackets[i].name=name;
+      state.rackets[i].minutes+=minutes;
+      state.rackets[i].sessions+=1;
+      save();render();$('notice').textContent=`Añadidos ${minutes} minutos a ${name}.`;
+    } else if(br){
+      const i=Number(br.dataset.break), r=state.rackets[i];
+      const name=$(`name${i}`).value.trim() || r.name || `Raqueta ${i+1}`;
+      if(r.sessions===0){$('notice').textContent='Esta raqueta todavía no tiene sesiones registradas.';return;}
+      if(!confirm(`¿Confirmas que se ha roto el cordaje de «${name}»? Se guardarán ${formatMinutes(r.minutes)} y el contador volverá a cero.`)) return;
+      state.history.push({name,minutes:r.minutes,sessions:r.sessions,date:dateNow()});
+      state.rackets[i]={name,minutes:0,sessions:0,lastStringDate:dateNow()};
+      save();render();$('notice').textContent=`Cordaje de ${name} guardado en el historial. Contador reiniciado.`;
+    }
+  });
+  $('racquets').addEventListener('change', e=>{
+    if(e.target.matches('input[id^="name"]')){
+      const i=Number(e.target.id.replace('name',''));
+      const name=e.target.value.trim();
+      if(name) state.rackets[i].name=name;
+      save();
+    }
+  });
+  $('export').addEventListener('click',()=>{
+    save();
+    const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob), a=document.createElement('a');
+    a.href=url;a.download=`copia-contador-cordaje-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+    $('notice').textContent='Copia de seguridad exportada.';
+  });
+  $('importFile').addEventListener('change',async e=>{
+    const file=e.target.files[0]; if(!file)return;
+    try{
+      const candidate=JSON.parse(await file.text());
+      if(!Array.isArray(candidate.rackets)||candidate.rackets.length!==2||!Array.isArray(candidate.history)) throw new Error();
+      if(!confirm('Restaurar esta copia sustituirá los datos actuales. ¿Continuar?')){e.target.value='';return;}
+      state=candidate;save();render();$('notice').textContent='Copia de seguridad restaurada.';
+    }catch{$('notice').textContent='No se pudo leer la copia. Selecciona un archivo JSON válido exportado desde esta aplicación.';}
+    e.target.value='';
+  });
+  render();
+})();
+</script>
+</body>
+</html>
