@@ -1,26 +1,16 @@
-CONTADOR DE CORDAJE DE TENIS — PRIMERA VERSIÓN
+CONTADOR DE CORDAJE DE TENIS — VERSIÓN 2
 
-Contenido:
-- index.html: aplicación.
-- manifest.json: configuración para instalarla como PWA.
-- sw.js: funcionamiento básico sin conexión después de la primera carga.
+NOVEDAD: ahora puedes elegir la fecha de cada sesión, incluso si jugaste en un día anterior. La sesión queda listada y se acumula en el total. Puedes eliminar una sesión registrada por error. Al registrar una rotura, el historial conserva las sesiones y sus fechas.
 
-FUNCIONES
-- Dos raquetas con nombres editables.
-- Introducción de minutos por sesión.
-- Acumulación automática de tiempo y sesiones.
-- Al romperse el cordaje, guarda la duración en el historial y reinicia ese contador.
-- Exportación e importación de copia de seguridad en JSON.
+ACTUALIZAR EN GITHUB PAGES
+1. Haz una copia de seguridad desde la app, por precaución.
+2. Descomprime este ZIP en el ordenador.
+3. Entra en tu repositorio de GitHub.
+4. Add file > Upload files.
+5. Sube y reemplaza index.html, manifest.json y sw.js por los de esta versión.
+6. Pulsa Commit changes y espera unos minutos.
+7. En el móvil, abre la dirección de tu app y recarga. Si muestra la versión antigua, cierra completamente la app y vuelve a abrirla; también puedes probar recargar dos veces.
 
-IMPORTANTE
-Los datos se guardan en el almacenamiento local del navegador del teléfono. Exporta copias de seguridad periódicamente. Si borras los datos del navegador, puedes perder el historial.
+DATOS ANTIGUOS: esta versión mantiene los totales e historial almacenados en el mismo navegador. Las sesiones anteriores a esta actualización no tendrán fecha individual porque la versión anterior no las guardaba; las nuevas sí.
 
-PARA USARLA EN ANDROID
-Una PWA necesita servirse desde una dirección HTTPS para poder instalarse correctamente y utilizar el service worker. No basta con abrir el archivo HTML directamente.
-1. Publica los tres archivos en un alojamiento estático HTTPS (por ejemplo, GitHub Pages).
-2. Abre la dirección HTTPS en Chrome en tu Android.
-3. Menú ⋮ > “Instalar aplicación” o “Añadir a pantalla de inicio” (el texto puede variar).
-4. Abre la aplicación instalada y prueba a registrar una sesión.
-5. Usa “Exportar copia de seguridad” para guardar una copia periódica.
-
-Esta primera versión no sincroniza datos entre móviles y no tiene una base de datos en la nube.
+Haz copias de seguridad periódicas. Los datos se guardan localmente en el navegador y no se sincronizan entre móviles.
