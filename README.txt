@@ -1,16 +1,20 @@
-CONTADOR DE CORDAJE DE TENIS — VERSIÓN 2
+CONTADOR DE CORDAJE DE TENIS — VERSIÓN 3
 
-NOVEDAD: ahora puedes elegir la fecha de cada sesión, incluso si jugaste en un día anterior. La sesión queda listada y se acumula en el total. Puedes eliminar una sesión registrada por error. Al registrar una rotura, el historial conserva las sesiones y sus fechas.
+Archivos: index.html, manifest.json, sw.js y este README.
 
-ACTUALIZAR EN GITHUB PAGES
-1. Haz una copia de seguridad desde la app, por precaución.
-2. Descomprime este ZIP en el ordenador.
-3. Entra en tu repositorio de GitHub.
-4. Add file > Upload files.
-5. Sube y reemplaza index.html, manifest.json y sw.js por los de esta versión.
-6. Pulsa Commit changes y espera unos minutos.
-7. En el móvil, abre la dirección de tu app y recarga. Si muestra la versión antigua, cierra completamente la app y vuelve a abrirla; también puedes probar recargar dos veces.
+Novedades:
+- Duraciones cada 30 minutos, de 30 min a 10 h, mostradas en formato legible.
+- Editar la fecha y la duración de una sesión.
+- Gráfico de barras: Raqueta 1 naranja y Raqueta 2 azul.
+- Totales y gráfico se actualizan al añadir, editar o borrar sesiones.
+- Se conserva la clave localStorage `contadorCordajeTenis_v1` para mantener los datos de versiones anteriores compatibles.
 
-DATOS ANTIGUOS: esta versión mantiene los totales e historial almacenados en el mismo navegador. Las sesiones anteriores a esta actualización no tendrán fecha individual porque la versión anterior no las guardaba; las nuevas sí.
+ACTUALIZACIÓN EN GITHUB PAGES
+1. Antes de actualizar, abre la app actual y pulsa Exportar datos.
+2. Descomprime este ZIP y sustituye en tu repositorio index.html, manifest.json y sw.js.
+3. Publica los cambios en la misma rama/carpeta de GitHub Pages.
+4. Abre la app con el mismo navegador y dominio que utilizabas antes.
+5. Comprueba los totales. Si no aparece la nueva versión, cierra y vuelve a abrir la aplicación o recarga la página.
 
-Haz copias de seguridad periódicas. Los datos se guardan localmente en el navegador y no se sincronizan entre móviles.
+IMPORTANTE
+Los datos se guardan en el almacenamiento local del navegador/dispositivo, no en GitHub. Exporta copias periódicamente. Al pulsar “Cordaje roto”, se archivan las sesiones del cordaje anterior y el contador de esa raqueta vuelve a cero.
